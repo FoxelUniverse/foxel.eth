@@ -1,6 +1,12 @@
 // deploy/00_deploy_your_contract.js
 
-const { ethers } = require("hardhat");
+const {
+  ethers
+} = require("hardhat");
+
+const {
+  utils
+} = require("ethers");
 
 const localChainId = "31337";
 
@@ -12,28 +18,42 @@ const sleep = (ms) =>
     }, ms)
   );
 
-module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
-  const { deploy } = deployments;
-  const { deployer } = await getNamedAccounts();
+const foxelAddress = '0xbe195210E733E12FaCb0221213Ab7a9ce2Ad817f';
+
+module.exports = async ({
+  getNamedAccounts,
+  deployments,
+  getChainId
+}) => {
+  const {
+    deploy
+  } = deployments;
+  const {
+    deployer
+  } = await getNamedAccounts();
   const chainId = await getChainId();
 
-  await deploy("OC_PHUNKS", {
+  await deploy("Foxel", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
-    args: ["0x16f5a35647d6f03d5d3da7b35409d65ba03af3b2"],
+    args: [
+      3000,
+      utils.parseEther("1"),
+      "ipfs://QmSAHHFAaVv6YYydxQQWPQ3wDVJDefHV9fpV8MPURBCWhq/"
+    ],
     log: true,
   });
 
   // Getting a previously deployed contract
-  const YourContract = await ethers.getContract("OC_PHUNKS", deployer);
-  /*  await YourContract.setPurpose("Hello");
-  
-    To take ownership of yourContract using the ownable library uncomment next line and add the 
-    address you want to be the owner. 
-    // yourContract.transferOwnership(YOUR_ADDRESS_HERE);
+  const YourContract = await ethers.getContract("Foxel", deployer);
+  //await YourContract.setPurpose("Hello");
 
-    //const yourContract = await ethers.getContractAt('YourContract', "0xaAC799eC2d00C013f1F11c37E654e59B0429DF6A") //<-- if you want to instantiate a version of a contract at a specific address!
-  */
+  // To take ownership of yourContract using the ownable library uncomment next line and add the 
+  // address you want to be the owner. 
+  await YourContract.transferOwnership(foxelAddress);
+
+  //const yourContract = await ethers.getContractAt('YourContract', "0xaAC799eC2d00C013f1F11c37E654e59B0429DF6A") //<-- if you want to instantiate a version of a contract at a specific address!
+
 
   /*
   //If you want to send value to an address from the deployer
@@ -71,4 +91,4 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     });
   } */
 };
-module.exports.tags = ["YourContract"];
+module.exports.tags = ["Foxel"];

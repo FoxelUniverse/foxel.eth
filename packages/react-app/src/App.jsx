@@ -1,4 +1,4 @@
-import { Alert, Button, Col, Menu, Row, Affix } from "antd";
+import { Alert, Button, Col, Menu, Row, Affix, Typography } from "antd";
 import "antd/dist/antd.css";
 import {
   useBalance,
@@ -10,7 +10,7 @@ import {
 } from "eth-hooks";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
 import React, { useCallback, useEffect, useState } from "react";
-import { HomeOutlined, BugOutlined, QuestionCircleOutlined, ReadOutlined } from "@ant-design/icons";
+import { HomeOutlined, BugOutlined, QuestionCircleOutlined, PlusCircleOutlined, DeploymentUnitOutlined, RocketOutlined, HeartOutlined } from "@ant-design/icons";
 import { Link, Route, Switch, useLocation } from "react-router-dom";
 import "./App.css";
 import {
@@ -26,12 +26,13 @@ import {
   FaucetHint,
   NetworkSwitch,
 } from "./components";
+import { useEventListener } from "eth-hooks/events/useEventListener";
 import { NETWORKS, ALCHEMY_KEY } from "./constants";
 import externalContracts from "./contracts/external_contracts";
 // contracts
 import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Transactor, Web3ModalSetup } from "./helpers";
-import { Home, ExampleUI, Hints, Subgraph } from "./views";
+import { Home, Hints, Subgraph, ViewFoxel, Roadmap, RecentlyMintedFoxels } from "./views";
 import { useStaticJsonRPC } from "./hooks";
 
 const { ethers } = require("ethers");
@@ -55,7 +56,7 @@ const { ethers } = require("ethers");
 */
 
 /// 📡 What chain are your contracts deployed to?
-const initialNetwork = NETWORKS.mainnet; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const initialNetwork = NETWORKS.matic; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true;
@@ -82,7 +83,7 @@ function App(props) {
   const [selectedNetwork, setSelectedNetwork] = useState(networkOptions[0]);
   const location = useLocation();
 
-  const targetNetwork = NETWORKS[selectedNetwork];
+  const targetNetwork = NETWORKS.localhost;
 
   // 🔭 block explorer URL
   const blockExplorer = targetNetwork.blockExplorer;
@@ -162,15 +163,21 @@ function App(props) {
   useOnBlock(mainnetProvider, () => {
     console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
   });
-
-  // Then read your DAI balance like:
-  const myMainnetDAIBalance = useContractReader(mainnetContracts, "DAI", "balanceOf", [
-    "0x34aA3F359A9D614239015126635CE7732c18fDF3",
-  ]);
+  const [minting, setMinting] = useState(false);
 
   // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(readContracts, "CryptoChunks", "tokenURI", [100]);
 
+  const currentSupply = useContractReader(readContracts, "Foxel", "currentSupply");
+  const tokenPrice = useContractReader(readContracts, "Foxel", "price", 10000);
+  const tokenLimit = useContractReader(readContracts, "Foxel", "limit", 10000);
+  const baseURI = useContractReader(readContracts, "Foxel", "baseURI");
+  const mintEnabled = useContractReader(readContracts, "Foxel", "mintEnabled");
+
+
+  const foxelEvents = useEventListener(readContracts, "Foxel", "minted", localProvider, 1);
+  console.log(foxelEvents);
+  const recentlyMinted = foxelEvents.slice(-5);
+  console.log(recentlyMinted);
   //
   // 🧫 DEBUG 👨🏻‍🔬
   //
@@ -195,7 +202,6 @@ function App(props) {
       console.log("💵 yourMainnetBalance", yourMainnetBalance ? ethers.utils.formatEther(yourMainnetBalance) : "...");
       console.log("📝 readContracts", readContracts);
       console.log("🌍 DAI contract on mainnet:", mainnetContracts);
-      console.log("💵 yourMainnetDAIBalance", myMainnetDAIBalance);
       console.log("🔐 writeContracts", writeContracts);
     }
   }, [
@@ -256,50 +262,86 @@ function App(props) {
             icon={
               <HomeOutlined
                 type="message"
-                style={{ paddingTop: 20, paddingLeft: 18, fontSize: "30px", color: "#08c" }}
+                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
                 theme="outlined"
               />
             }
             key="/"
           >
-            <Link to="/"></Link>
+            <Link to="/">Home</Link>
           </Menu.Item>
           <Menu.Item
             icon={
+              <PlusCircleOutlined
+                type="message"
+                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
+                theme="outlined"
+              />
+            }
+            key="/mint"
+          >
+            <Link to="/mint">Mint</Link>
+          </Menu.Item>
+          <Menu.Item
+            icon={
+              <RocketOutlined
+                type="message"
+                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
+                theme="outlined"
+              />
+            }
+            key="/roadmap"
+          >
+            <Link to="/roadmap">Roadmap</Link>
+          </Menu.Item>
+          <Menu.Item
+            icon={
+              <DeploymentUnitOutlined
+                type="message"
+                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
+                theme="outlined"
+              />
+            }
+            key="/dao"
+          >
+            <Link to="/dao">FoxelDAO</Link>
+          </Menu.Item>
+          <Menu.Item
+            icon={
+              <HeartOutlined
+                type="message"
+                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
+                theme="outlined"
+              />
+            }
+            key="/breed"
+          >
+            <Link to="/breed">Breed</Link>
+          </Menu.Item>
+          {DEBUG ? (<Menu.Item
+            icon={
               <BugOutlined
                 type="message"
-                style={{ paddingTop: 20, paddingLeft: 18, fontSize: "30px", color: "#08c" }}
+                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
                 theme="outlined"
               />
             }
             key="/debug"
           >
-            <Link to="/debug"></Link>
-          </Menu.Item>
-          <Menu.Item
+            <Link to="/debug">Debug</Link>
+          </Menu.Item>) : null}
+          {DEBUG ? (<Menu.Item
             icon={
               <QuestionCircleOutlined
                 type="message"
-                style={{ paddingTop: 20, paddingLeft: 18, fontSize: "30px", color: "#08c" }}
+                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
                 theme="outlined"
               />
             }
             key="/hints"
           >
-            <Link to="/hints"></Link>
-          </Menu.Item>
-          <Menu.Item
-            icon={
-              <ReadOutlined
-                type="message"
-                style={{ paddingTop: 20, paddingLeft: 18, fontSize: "30px", color: "#08c" }}
-                theme="outlined"
-              />
-            }
-            key="/exampleui"
-          >
-            <Link to="/exampleui"></Link>
-          </Menu.Item>
+            <Link to="/hints">Hints</Link>
+          </Menu.Item>) : null}
         </Menu>
         <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
           <div style={{ display: "flex", flex: 1, alignItems: "center" }}>
@@ -341,6 +383,85 @@ function App(props) {
             localProvider={localProvider}
           />
         </Route>
+        <Route exact path="/roadmap">
+          {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
+          <Roadmap
+            yourLocalBalance={yourLocalBalance}
+            writeContracts={writeContracts}
+            readContracts={readContracts}
+            tx={tx}
+            localProvider={localProvider}
+          />
+        </Route>
+        <Route exact path="/foxel/:id">
+          {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
+          <ViewFoxel
+            yourLocalBalance={yourLocalBalance}
+            writeContracts={writeContracts}
+            readContracts={readContracts}
+            tx={tx}
+            localProvider={localProvider}
+          />
+        </Route>
+        <Route exact path="/mint">
+          {address ? (
+            <Button
+              style={{ margin: 8, fontSize: 24, height: 50 }}
+              type="primary"
+              size="large"
+              loading={minting}
+              disabled={
+                !mintEnabled ||
+                !address ||
+                price > yourLocalBalance ||
+                (tokenLimit && currentSupply && tokenLimit.toString() == currentSupply.toString())
+              }
+              onClick={async () => {
+                try {
+                  setMinting(true);
+                  const result = tx(
+                    writeContracts.Foxel.safeMint(address, {
+                      value: tokenPrice,
+                      gasLimit: "140000",
+                    }),
+                  );
+                  console.log("awaiting metamask/web3 confirm result...", result);
+                  console.log(await result);
+                  setMinting(false);
+                } catch (e) {
+                  console.log(e);
+                  setMinting(false);
+                }
+              }}
+            >
+              {`Mint for ${tokenPrice ? ethers.utils.formatEther(tokenPrice) : "..."} MATIC`}
+            </Button>
+          ) : (
+            <Button
+              key="loginbutton"
+              type="primary"
+              style={{ verticalAlign: "top", margin: 8, fontSize: 24, height: 50 }}
+              shape="round"
+              size="large"
+              /* type={minimized ? "default" : "primary"}     too many people just defaulting to MM and having a bad time */
+              onClick={loadWeb3Modal}
+            >
+              connect to mint
+            </Button>
+          )}
+          <p>
+            <Typography.Text style={{ margin: 8 }}>{`${currentSupply || "..."} out of ${tokenLimit || "..."
+              } minted`}</Typography.Text>
+          </p>
+          {recentlyMinted && baseURI ? (
+            <RecentlyMintedFoxels
+              recentlyMinted={recentlyMinted}
+              baseURI={baseURI}
+            />) : (
+            <div />
+          )}
+
+        </Route>
         <Route exact path="/debug">
           {/*
                 🎛 this scaffolding is full of commonly used components
@@ -349,7 +470,7 @@ function App(props) {
             */}
 
           <Contract
-            name="CryptoChunks"
+            name="Foxel"
             price={price}
             signer={userSigner}
             provider={localProvider}
@@ -365,42 +486,6 @@ function App(props) {
             mainnetProvider={mainnetProvider}
             price={price}
           />
-        </Route>
-        <Route path="/exampleui">
-          <ExampleUI
-            address={address}
-            userSigner={userSigner}
-            mainnetProvider={mainnetProvider}
-            localProvider={localProvider}
-            yourLocalBalance={yourLocalBalance}
-            price={price}
-            tx={tx}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            purpose={purpose}
-          />
-        </Route>
-        <Route path="/mainnetdai">
-          <Contract
-            name="DAI"
-            customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.DAI}
-            signer={userSigner}
-            provider={mainnetProvider}
-            address={address}
-            blockExplorer="https://etherscan.io/"
-            contractConfig={contractConfig}
-            chainId={1}
-          />
-          {/*
-            <Contract
-              name="UNI"
-              customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.UNI}
-              signer={userSigner}
-              provider={mainnetProvider}
-              address={address}
-              blockExplorer="https://etherscan.io/"
-            />
-            */}
         </Route>
         <Route path="/subgraph">
           <Subgraph
