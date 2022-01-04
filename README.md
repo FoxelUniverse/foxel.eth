@@ -1,53 +1,42 @@
-# 🏗 Scaffold-ETH
+# Foxel.eth
+## Description
+This is the public facing DApp for interacting with the Foxel smart contracts. It was bootstrapped using [scaffold-eth](https://github.com/scaffold-eth/scaffold-eth)
 
-> everything you need to build on Ethereum! 🚀
-
-🧪 Quickly experiment with Solidity using a frontend that adapts to your smart contract:
-
-![image](https://user-images.githubusercontent.com/2653167/124158108-c14ca380-da56-11eb-967e-69cde37ca8eb.png)
-
-
-# 🏄‍♂️ Quick Start
+# Getting your local envirnment setup:
 
 Prerequisites: [Node](https://nodejs.org/en/download/) plus [Yarn](https://classic.yarnpkg.com/en/docs/install/) and [Git](https://git-scm.com/downloads)
 
-> clone/fork 🏗 scaffold-eth:
+> clone/fork foxel.eth:
 
 ```bash
-git clone https://github.com/scaffold-eth/scaffold-eth.git
+git clone https://github.com/FoxelUniverse/foxel.eth
 ```
 
-> install and start your 👷‍ Hardhat chain:
+> install and start your local 👷‍ Hardhat chain:
 
 ```bash
-cd scaffold-eth
+cd foxel.eth
 yarn install
 yarn chain
 ```
 
-> in a second terminal window, start your 📱 frontend:
+> in a second terminal window, start the 📱 frontend:
 
 ```bash
-cd scaffold-eth
+cd foxel.eth
 yarn start
 ```
 
-> in a third terminal window, 🛰 deploy your contract:
+> in a third terminal window, 🛰 deploy the contract(s):
 
 ```bash
-cd scaffold-eth
+cd foxel.eth
 yarn deploy
 ```
 
-🔏 Edit your smart contract `YourContract.sol` in `packages/hardhat/contracts`
+You are now setup to begin editing the contracts and the front end!
 
-📝 Edit your frontend `App.jsx` in `packages/react-app/src`
-
-💼 Edit your deployment scripts in `packages/hardhat/deploy`
-
-📱 Open http://localhost:3000 to see the app
-
-# 📚 Documentation
+# 📚 Scaffold-eth Documentation
 
 Documentation, tutorials, challenges, and many more resources, visit: [docs.scaffoldeth.io](https://docs.scaffoldeth.io)
 
