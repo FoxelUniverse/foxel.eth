@@ -26,3 +26,7 @@ export {
   default as Foxel
 }
 from "./shared/Foxel";
+export {
+  default as MintView
+}
+from "./MintView";

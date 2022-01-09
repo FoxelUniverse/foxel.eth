@@ -1,4 +1,5 @@
 import React from "react";
+import { Alert, Button, Col, Menu, Row, Affix, Typography } from "antd";
 import { Link } from "react-router-dom";
 import { useContractReader } from "eth-hooks";
 import { ethers } from "ethers";
@@ -15,18 +16,18 @@ function Home({ yourLocalBalance, readContracts }) {
   // you can also use hooks locally in your component of choice
   // in this case, let's keep track of 'purpose' variable from our contract
   const purpose = useContractReader(readContracts, "YourContract", "purpose");
-  useScript('https://platform.twitter.com/widgets.js');
+  //useScript('https://platform.twitter.com/widgets.js');
   return (
-    <div style={{ minHeight: 800 }}>
+    <div>
       <FoxelBackdrop />
       <div>
         <h1 style={{ fontSize: '54px', margin: '10px 0 0' }}>Foxel Universe</h1>
-        <a href="https://twitter.com/FoxelUniverse?ref_src=twsrc%5Etfw" className="twitter-follow-button" data-show-count="false">Follow @FoxelUniverse</a>
+        {/* <a href="https://twitter.com/FoxelUniverse?ref_src=twsrc%5Etfw" className="twitter-follow-button" data-show-count="false">Follow @FoxelUniverse</a> */}
       </div>
       <div style={{ margin: '32px auto', width: '70%' }}>
-        <h2>Foxel is an open-source, community-driven game of fox-like<br /> creatures that can be bred, battled and traded.<br /><br /> Each owner becomes a member of FoxelDAO and can contribute to the Foxel ecosystem through submitting ideas, voting and executing on the decisions of FoxelDAO with their own unique abilities.</h2>
+        <h2>Foxel is an open-source, community-driven game of fox-like<br /> creatures that can be bred, battled and traded.<br /><br /> Each owner will be able to become a member of FoxelDAO and can contribute to the Foxel ecosystem through submitting ideas, voting and executing on the decisions of FoxelDAO with their own unique abilities.</h2>
       </div>
-
+      <Button type="primary" style={{ margin: '32px auto', width: '15%', height: 40 }}><Link to="/mint">Mint a Foxel</Link></Button>
     </div >
   );
 }

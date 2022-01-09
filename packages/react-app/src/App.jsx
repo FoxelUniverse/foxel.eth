@@ -10,7 +10,7 @@ import {
 } from "eth-hooks";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
 import React, { useCallback, useEffect, useState } from "react";
-import { HomeOutlined, BugOutlined, QuestionCircleOutlined, PlusCircleOutlined, DeploymentUnitOutlined, RocketOutlined, HeartOutlined } from "@ant-design/icons";
+import { HomeOutlined, BugOutlined, QuestionCircleOutlined, PlusCircleOutlined, DeploymentUnitOutlined, RocketOutlined, HeartOutlined, GithubOutlined, TwitterOutlined, FileTextOutlined } from "@ant-design/icons";
 import { Link, Route, Switch, useLocation } from "react-router-dom";
 import "./App.css";
 import {
@@ -32,7 +32,7 @@ import externalContracts from "./contracts/external_contracts";
 // contracts
 import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Transactor, Web3ModalSetup } from "./helpers";
-import { Home, Hints, Subgraph, ViewFoxel, Roadmap, RecentlyMintedFoxels } from "./views";
+import { Home, Hints, Subgraph, ViewFoxel, Roadmap, MintView } from "./views";
 import { useStaticJsonRPC } from "./hooks";
 
 const { ethers } = require("ethers");
@@ -56,7 +56,7 @@ const { ethers } = require("ethers");
 */
 
 /// 📡 What chain are your contracts deployed to?
-const initialNetwork = NETWORKS.matic; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const initialNetwork = NETWORKS.mumbai; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true;
@@ -83,7 +83,7 @@ function App(props) {
   const [selectedNetwork, setSelectedNetwork] = useState(networkOptions[0]);
   const location = useLocation();
 
-  const targetNetwork = NETWORKS.localhost;
+  const targetNetwork = NETWORKS.mumbai;
 
   // 🔭 block explorer URL
   const blockExplorer = targetNetwork.blockExplorer;
@@ -170,8 +170,9 @@ function App(props) {
   const currentSupply = useContractReader(readContracts, "Foxel", "currentSupply");
   const tokenPrice = useContractReader(readContracts, "Foxel", "price", 10000);
   const tokenLimit = useContractReader(readContracts, "Foxel", "limit", 10000);
-  const baseURI = useContractReader(readContracts, "Foxel", "baseURI");
   const mintEnabled = useContractReader(readContracts, "Foxel", "mintEnabled");
+  const baseUri = useContractReader(readContracts, "Foxel", "baseURI");
+
 
 
   const foxelEvents = useEventListener(readContracts, "Foxel", "minted", localProvider, 1);
@@ -294,7 +295,7 @@ function App(props) {
           >
             <Link to="/roadmap">Roadmap</Link>
           </Menu.Item>
-          <Menu.Item
+          {/* <Menu.Item
             icon={
               <DeploymentUnitOutlined
                 type="message"
@@ -317,7 +318,7 @@ function App(props) {
             key="/breed"
           >
             <Link to="/breed">Breed</Link>
-          </Menu.Item>
+          </Menu.Item> */}
           {DEBUG ? (<Menu.Item
             icon={
               <BugOutlined
@@ -361,6 +362,7 @@ function App(props) {
               userSigner={userSigner}
               mainnetProvider={mainnetProvider}
               price={price}
+              tokenPrice={tokenPrice}
               web3Modal={web3Modal}
               loadWeb3Modal={loadWeb3Modal}
               logoutOfWeb3Modal={logoutOfWeb3Modal}
@@ -396,6 +398,7 @@ function App(props) {
         <Route exact path="/foxel/:id">
           {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
           <ViewFoxel
+            baseUri={baseUri}
             yourLocalBalance={yourLocalBalance}
             writeContracts={writeContracts}
             readContracts={readContracts}
@@ -404,62 +407,21 @@ function App(props) {
           />
         </Route>
         <Route exact path="/mint">
-          {address ? (
-            <Button
-              style={{ margin: 8, fontSize: 24, height: 50 }}
-              type="primary"
-              size="large"
-              loading={minting}
-              disabled={
-                !mintEnabled ||
-                !address ||
-                price > yourLocalBalance ||
-                (tokenLimit && currentSupply && tokenLimit.toString() == currentSupply.toString())
-              }
-              onClick={async () => {
-                try {
-                  setMinting(true);
-                  const result = tx(
-                    writeContracts.Foxel.safeMint(address, {
-                      value: tokenPrice,
-                      gasLimit: "140000",
-                    }),
-                  );
-                  console.log("awaiting metamask/web3 confirm result...", result);
-                  console.log(await result);
-                  setMinting(false);
-                } catch (e) {
-                  console.log(e);
-                  setMinting(false);
-                }
-              }}
-            >
-              {`Mint for ${tokenPrice ? ethers.utils.formatEther(tokenPrice) : "..."} MATIC`}
-            </Button>
-          ) : (
-            <Button
-              key="loginbutton"
-              type="primary"
-              style={{ verticalAlign: "top", margin: 8, fontSize: 24, height: 50 }}
-              shape="round"
-              size="large"
-              /* type={minimized ? "default" : "primary"}     too many people just defaulting to MM and having a bad time */
-              onClick={loadWeb3Modal}
-            >
-              connect to mint
-            </Button>
-          )}
-          <p>
-            <Typography.Text style={{ margin: 8 }}>{`${currentSupply || "..."} out of ${tokenLimit || "..."
-              } minted`}</Typography.Text>
-          </p>
-          {recentlyMinted && baseURI ? (
-            <RecentlyMintedFoxels
-              recentlyMinted={recentlyMinted}
-              baseURI={baseURI}
-            />) : (
-            <div />
-          )}
+          <MintView
+            address={address}
+            loadWeb3Modal={loadWeb3Modal}
+            price={price}
+            yourLocalBalance={yourLocalBalance}
+            tokenLimit={tokenLimit}
+            tokenPrice={tokenPrice}
+            mintEnabled={mintEnabled}
+            currentSupply={currentSupply}
+            minting={minting}
+            writeContracts={writeContracts}
+            recentlyMinted={recentlyMinted}
+            setMinting={setMinting}
+            tx={tx}
+          />
 
         </Route>
         <Route exact path="/debug">
@@ -500,33 +462,40 @@ function App(props) {
       <ThemeSwitch />
 
       {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
+      <div style={{ padding: 20, bottom: 0, width: '100%' }} >
+        <Row gutter={[16, 16]} justify="center">
+          <Col span={4}>
+            <a href="https://github.com/FoxelUniverse" target="_blank" rel="noopener noreferrer">
+              <GithubOutlined
+                title="Look at Source Code on GitHub"
+                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
+                theme="outlined">
 
+              </GithubOutlined>
+            </a>
+          </Col>
+          <Col span={4}>
+            <a href="https://twitter.com/FoxelUniverse?ref_src=twsrc%5Etfw" target="_blank" rel="noopener noreferrer">
+              <TwitterOutlined
+                title="Follow Foxel on Twitter"
+                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
+                theme="outlined">
+              </TwitterOutlined>
+            </a>
+          </Col>
+          <Col span={4}>
+            <a href="https://polygonscan.com/address/" target="_blank" rel="noopener noreferrer">
+              <FileTextOutlined
+                title="View the Contract on PolygonScan"
+                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
+                theme="outlined">
+              </FileTextOutlined>
+            </a>
+          </Col>
+        </Row>
+      </div>
       {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
       <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-        {/* <Row align="middle" gutter={[4, 4]}>
-          <Col span={8}>
-            <Ramp price={price} address={address} networks={NETWORKS} />
-          </Col>
-
-          <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-            <GasGauge gasPrice={gasPrice} />
-          </Col>
-          <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-            <Button
-              onClick={() => {
-                window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
-              }}
-              size="large"
-              shape="round"
-            >
-              <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                💬
-              </span>
-              Support
-            </Button>
-          </Col>
-        </Row> */}
-
         <Row align="middle" gutter={[4, 4]}>
           <Col span={24}>
             {
@@ -540,7 +509,7 @@ function App(props) {
           </Col>
         </Row>
       </div>
-    </div>
+    </div >
   );
 }
 

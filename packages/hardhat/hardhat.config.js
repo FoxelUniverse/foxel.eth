@@ -33,7 +33,7 @@ const {
 //
 // Select the network you want to deploy to here:
 //
-const defaultNetwork = "localhost";
+const defaultNetwork = "mumbai";
 
 const mainnetGwei = 70;
 
@@ -160,15 +160,15 @@ module.exports = {
       },
     },
     polygon: {
-      url: "https://speedy-nodes-nyc.moralis.io/XXXXXXXXXXXXXXXXXXXx/polygon/mainnet", // <---- YOUR MORALIS ID! (not limited to infura)
+      url: `https://speedy-nodes-nyc.moralis.io/${process.env.MORALIS_KEY}/polygon/mainnet`, // <---- YOUR MORALIS ID! (not limited to infura)
       gasPrice: 1000000000,
       accounts: {
         mnemonic: mnemonic(),
       },
     },
     mumbai: {
-      url: "https://rpc-mumbai.maticvigil.com/", // <---- YOUR MORALIS ID! (not limited to infura)
-      gasPrice: 1000000000,
+      url: `https://speedy-nodes-nyc.moralis.io/${process.env.MORALIS_KEY}/polygon/mumbai`, // <---- YOUR MORALIS ID! (not limited to infura)
+      gasPrice: 2000000000,
       accounts: {
         mnemonic: mnemonic(),
       },
