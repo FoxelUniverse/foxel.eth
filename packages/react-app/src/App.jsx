@@ -10,22 +10,21 @@ import {
 } from "eth-hooks";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
 import React, { useCallback, useEffect, useState } from "react";
-import { HomeOutlined, BugOutlined, QuestionCircleOutlined, PlusCircleOutlined, DeploymentUnitOutlined, RocketOutlined, HeartOutlined, GithubOutlined, TwitterOutlined, FileTextOutlined } from "@ant-design/icons";
-import { Link, Route, Switch, useLocation } from "react-router-dom";
-import "./App.css";
 import {
-  Account,
-  Contract,
-  Faucet,
-  Events,
-  GasGauge,
-  Header,
-  Ramp,
-  ThemeSwitch,
-  NetworkDisplay,
-  FaucetHint,
-  NetworkSwitch,
-} from "./components";
+  HomeOutlined,
+  BugOutlined,
+  QuestionCircleOutlined,
+  PlusCircleOutlined,
+  DeploymentUnitOutlined,
+  RocketOutlined,
+  HeartOutlined,
+  GithubOutlined,
+  TwitterOutlined,
+  FileTextOutlined,
+} from "@ant-design/icons";
+import { Link, Route, Switch, HashRouter, useLocation } from "react-router-dom";
+import "./App.css";
+import { Account, Contract, Faucet, ThemeSwitch, NetworkDisplay, FaucetHint } from "./components";
 import { useEventListener } from "eth-hooks/events/useEventListener";
 import { NETWORKS, ALCHEMY_KEY } from "./constants";
 import externalContracts from "./contracts/external_contracts";
@@ -83,7 +82,7 @@ function App(props) {
   const [selectedNetwork, setSelectedNetwork] = useState(networkOptions[0]);
   const location = useLocation();
 
-  const targetNetwork = NETWORKS.mumbai;
+  const targetNetwork = NETWORKS.matic;
 
   // 🔭 block explorer URL
   const blockExplorer = targetNetwork.blockExplorer;
@@ -168,17 +167,11 @@ function App(props) {
   // keep track of a variable from the contract in the local React state:
 
   const currentSupply = useContractReader(readContracts, "Foxel", "currentSupply");
-  const tokenPrice = useContractReader(readContracts, "Foxel", "price", 10000);
-  const tokenLimit = useContractReader(readContracts, "Foxel", "limit", 10000);
+  const tokenPrice = useContractReader(readContracts, "Foxel", "price", 30000);
+  const tokenLimit = useContractReader(readContracts, "Foxel", "limit", 30000);
   const mintEnabled = useContractReader(readContracts, "Foxel", "mintEnabled");
   const baseUri = useContractReader(readContracts, "Foxel", "baseURI");
 
-
-
-  const foxelEvents = useEventListener(readContracts, "Foxel", "minted", localProvider, 1);
-  console.log(foxelEvents);
-  const recentlyMinted = foxelEvents.slice(-5);
-  console.log(recentlyMinted);
   //
   // 🧫 DEBUG 👨🏻‍🔬
   //
@@ -258,7 +251,7 @@ function App(props) {
           USE_NETWORK_SELECTOR={USE_NETWORK_SELECTOR}
         />
 
-        <Menu style={{ textAlign: "left" }} selectedKeys={[location.pathname]} mode="horizontal">
+        <Menu style={{ textAlign: "left" }} selectedKeys={[location.hash]} mode="horizontal">
           <Menu.Item
             icon={
               <HomeOutlined
@@ -267,9 +260,9 @@ function App(props) {
                 theme="outlined"
               />
             }
-            key="/"
+            key="#/"
           >
-            <Link to="/">Home</Link>
+            <a href="/#/">Home</a>
           </Menu.Item>
           <Menu.Item
             icon={
@@ -279,9 +272,9 @@ function App(props) {
                 theme="outlined"
               />
             }
-            key="/mint"
+            key="#/mint"
           >
-            <Link to="/mint">Mint</Link>
+            <a href="/#/mint">Mint</a>
           </Menu.Item>
           <Menu.Item
             icon={
@@ -291,9 +284,9 @@ function App(props) {
                 theme="outlined"
               />
             }
-            key="/roadmap"
+            key="#/roadmap"
           >
-            <Link to="/roadmap">Roadmap</Link>
+            <a href="/#/roadmap">Roadmap</a>
           </Menu.Item>
           {/* <Menu.Item
             icon={
@@ -303,9 +296,9 @@ function App(props) {
                 theme="outlined"
               />
             }
-            key="/dao"
+            key="#/dao"
           >
-            <Link to="/dao">FoxelDAO</Link>
+            <a href="/#/dao">FoxelDAO</a>
           </Menu.Item>
           <Menu.Item
             icon={
@@ -315,34 +308,38 @@ function App(props) {
                 theme="outlined"
               />
             }
-            key="/breed"
+            key="#/breed"
           >
-            <Link to="/breed">Breed</Link>
+            <a href="/#/breed">Breed</a>
           </Menu.Item> */}
-          {DEBUG ? (<Menu.Item
-            icon={
-              <BugOutlined
-                type="message"
-                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
-                theme="outlined"
-              />
-            }
-            key="/debug"
-          >
-            <Link to="/debug">Debug</Link>
-          </Menu.Item>) : null}
-          {DEBUG ? (<Menu.Item
-            icon={
-              <QuestionCircleOutlined
-                type="message"
-                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
-                theme="outlined"
-              />
-            }
-            key="/hints"
-          >
-            <Link to="/hints">Hints</Link>
-          </Menu.Item>) : null}
+          {DEBUG ? (
+            <Menu.Item
+              icon={
+                <BugOutlined
+                  type="message"
+                  style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
+                  theme="outlined"
+                />
+              }
+              key="#/debug"
+            >
+              <a href="/#/debug">Debug</a>
+            </Menu.Item>
+          ) : null}
+          {DEBUG ? (
+            <Menu.Item
+              icon={
+                <QuestionCircleOutlined
+                  type="message"
+                  style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
+                  theme="outlined"
+                />
+              }
+              key="#/hints"
+            >
+              <a href="/#/hints">Hints</a>
+            </Menu.Item>
+          ) : null}
         </Menu>
         <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
           <div style={{ display: "flex", flex: 1, alignItems: "center" }}>
@@ -374,104 +371,89 @@ function App(props) {
           )}
         </div>
       </Affix>
-      <Switch>
-        <Route exact path="/">
-          {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
-          <Home
-            yourLocalBalance={yourLocalBalance}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            tx={tx}
-            localProvider={localProvider}
-          />
-        </Route>
-        <Route exact path="/roadmap">
-          {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
-          <Roadmap
-            yourLocalBalance={yourLocalBalance}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            tx={tx}
-            localProvider={localProvider}
-          />
-        </Route>
-        <Route exact path="/foxel/:id">
-          {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
-          <ViewFoxel
-            baseUri={baseUri}
-            yourLocalBalance={yourLocalBalance}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            tx={tx}
-            localProvider={localProvider}
-          />
-        </Route>
-        <Route exact path="/mint">
-          <MintView
-            address={address}
-            loadWeb3Modal={loadWeb3Modal}
-            price={price}
-            yourLocalBalance={yourLocalBalance}
-            tokenLimit={tokenLimit}
-            tokenPrice={tokenPrice}
-            mintEnabled={mintEnabled}
-            currentSupply={currentSupply}
-            minting={minting}
-            writeContracts={writeContracts}
-            recentlyMinted={recentlyMinted}
-            setMinting={setMinting}
-            tx={tx}
-          />
-
-        </Route>
-        <Route exact path="/debug">
-          {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
-
-          <Contract
-            name="Foxel"
-            price={price}
-            signer={userSigner}
-            provider={localProvider}
-            address={address}
-            blockExplorer={blockExplorer}
-            contractConfig={contractConfig}
-          />
-        </Route>
-        <Route path="/hints">
-          <Hints
-            address={address}
-            yourLocalBalance={yourLocalBalance}
-            mainnetProvider={mainnetProvider}
-            price={price}
-          />
-        </Route>
-        <Route path="/subgraph">
-          <Subgraph
-            subgraphUri={props.subgraphUri}
-            tx={tx}
-            writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
-          />
-        </Route>
-      </Switch>
-
+      <HashRouter>
+        <Switch>
+          <Route exact path="/">
+            {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
+            <Home
+              yourLocalBalance={yourLocalBalance}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              tx={tx}
+              localProvider={localProvider}
+            />
+          </Route>
+          <Route path="/roadmap">
+            {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
+            <Roadmap
+              yourLocalBalance={yourLocalBalance}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              tx={tx}
+              localProvider={localProvider}
+            />
+          </Route>
+          <Route path="/foxel/:id">
+            {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
+            <ViewFoxel baseUri={baseUri} />
+          </Route>
+          <Route path="/mint">
+            <MintView
+              address={address}
+              loadWeb3Modal={loadWeb3Modal}
+              price={price}
+              yourLocalBalance={yourLocalBalance}
+              tokenLimit={tokenLimit}
+              tokenPrice={tokenPrice}
+              mintEnabled={mintEnabled}
+              currentSupply={currentSupply}
+              minting={minting}
+              writeContracts={writeContracts}
+              setMinting={setMinting}
+              tx={tx}
+            />
+          </Route>
+          <Route path="/debug">
+            <Contract
+              name="Foxel"
+              price={price}
+              signer={userSigner}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              contractConfig={contractConfig}
+            />
+          </Route>
+          <Route path="/hints">
+            <Hints
+              address={address}
+              yourLocalBalance={yourLocalBalance}
+              mainnetProvider={mainnetProvider}
+              price={price}
+            />
+          </Route>
+          <Route path="/subgraph">
+            <Subgraph
+              subgraphUri={props.subgraphUri}
+              tx={tx}
+              writeContracts={writeContracts}
+              mainnetProvider={mainnetProvider}
+            />
+          </Route>
+        </Switch>
+      </HashRouter>
       <ThemeSwitch />
 
       {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
-      <div style={{ padding: 20, bottom: 0, width: '100%' }} >
+      <div style={{ padding: 20, bottom: 0, width: "100%" }}>
         <Row gutter={[16, 16]} justify="center">
           <Col span={4}>
             <a href="https://github.com/FoxelUniverse" target="_blank" rel="noopener noreferrer">
               <GithubOutlined
                 title="Look at Source Code on GitHub"
                 style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
-                theme="outlined">
-
-              </GithubOutlined>
+                theme="outlined"
+              ></GithubOutlined>
             </a>
           </Col>
           <Col span={4}>
@@ -479,17 +461,21 @@ function App(props) {
               <TwitterOutlined
                 title="Follow Foxel on Twitter"
                 style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
-                theme="outlined">
-              </TwitterOutlined>
+                theme="outlined"
+              ></TwitterOutlined>
             </a>
           </Col>
           <Col span={4}>
-            <a href="https://polygonscan.com/address/" target="_blank" rel="noopener noreferrer">
+            <a
+              href="https://polygonscan.com/address/0x35ba602c23d9f310fb2608f81c0c9e49c5136989"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <FileTextOutlined
                 title="View the Contract on PolygonScan"
                 style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
-                theme="outlined">
-              </FileTextOutlined>
+                theme="outlined"
+              ></FileTextOutlined>
             </a>
           </Col>
         </Row>
@@ -509,7 +495,7 @@ function App(props) {
           </Col>
         </Row>
       </div>
-    </div >
+    </div>
   );
 }
 
