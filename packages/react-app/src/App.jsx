@@ -1,4 +1,4 @@
-import { Alert, Button, Col, Menu, Row, Affix, Typography } from "antd";
+import { Col, Menu, Row, Affix } from "antd";
 import "antd/dist/antd.css";
 import {
   useBalance,
@@ -10,55 +10,34 @@ import {
 } from "eth-hooks";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
 import React, { useCallback, useEffect, useState } from "react";
-import {
+import Icon, {
   HomeOutlined,
   BugOutlined,
   QuestionCircleOutlined,
   PlusCircleOutlined,
-  DeploymentUnitOutlined,
   RocketOutlined,
-  HeartOutlined,
   GithubOutlined,
   TwitterOutlined,
   FileTextOutlined,
 } from "@ant-design/icons";
-import { Link, Route, Switch, HashRouter, useLocation } from "react-router-dom";
+import { Route, Switch, HashRouter, useLocation } from "react-router-dom";
 import "./App.css";
 import { Account, Contract, Faucet, ThemeSwitch, NetworkDisplay, FaucetHint } from "./components";
-import { useEventListener } from "eth-hooks/events/useEventListener";
 import { NETWORKS, ALCHEMY_KEY } from "./constants";
 import externalContracts from "./contracts/external_contracts";
 // contracts
 import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Transactor, Web3ModalSetup } from "./helpers";
-import { Home, Hints, Subgraph, ViewFoxel, Roadmap, MintView } from "./views";
+import { Home, Hints, Subgraph, ViewFoxel, Roadmap, MintView, OpenSea } from "./views";
 import { useStaticJsonRPC } from "./hooks";
 
 const { ethers } = require("ethers");
-/*
-    Welcome to 🏗 scaffold-eth !
-
-    Code:
-    https://github.com/scaffold-eth/scaffold-eth
-
-    Support:
-    https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA
-    or DM @austingriffith on twitter or telegram
-
-    You should get your own Alchemy.com & Infura.io ID and put it in `constants.js`
-    (this is your connection to the main Ethereum network for ENS etc.)
-
-
-    🌏 EXTERNAL CONTRACTS:
-    You can also bring in contract artifacts in `constants.js`
-    (and then use the `useExternalContractLoader()` hook!)
-*/
 
 /// 📡 What chain are your contracts deployed to?
-const initialNetwork = NETWORKS.mumbai; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const initialNetwork = NETWORKS.matic; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
-const DEBUG = true;
+const DEBUG = false;
 const NETWORKCHECK = true;
 const USE_BURNER_WALLET = false; // toggle burner wallet feature
 const USE_NETWORK_SELECTOR = false;
@@ -138,12 +117,10 @@ function App(props) {
   const tx = Transactor(userSigner, gasPrice);
 
   // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
-  const yourLocalBalance = useBalance(localProvider, address);
+  const yourLocalBalance = useBalance(localProvider, address, 30000);
 
   // Just plug in different 🛰 providers to get your balance on different chains:
-  const yourMainnetBalance = useBalance(mainnetProvider, address);
-
-  // const contractConfig = useContractConfig();
+  const yourMainnetBalance = useBalance(mainnetProvider, address, 30000);
 
   const contractConfig = { deployedContracts: deployedContracts || {}, externalContracts: externalContracts || {} };
 
@@ -166,11 +143,11 @@ function App(props) {
 
   // keep track of a variable from the contract in the local React state:
 
-  const currentSupply = useContractReader(readContracts, "Foxel", "currentSupply");
-  const tokenPrice = useContractReader(readContracts, "Foxel", "price", 30000);
-  const tokenLimit = useContractReader(readContracts, "Foxel", "limit", 30000);
-  const mintEnabled = useContractReader(readContracts, "Foxel", "mintEnabled");
-  const baseUri = useContractReader(readContracts, "Foxel", "baseURI");
+  const currentSupply = useContractReader(readContracts, "Foxel", "currentSupply", null, 30000);
+  const tokenPrice = useContractReader(readContracts, "Foxel", "price", null, 30000);
+  const tokenLimit = useContractReader(readContracts, "Foxel", "limit", null, 30000);
+  const mintEnabled = useContractReader(readContracts, "Foxel", "mintEnabled", null, 30000);
+  const baseUri = useContractReader(readContracts, "Foxel", "baseURI", null, 30000);
 
   //
   // 🧫 DEBUG 👨🏻‍🔬
@@ -287,6 +264,18 @@ function App(props) {
             key="#/roadmap"
           >
             <a href="/#/roadmap">Roadmap</a>
+          </Menu.Item>
+          <Menu.Item
+            icon={
+              <Icon
+                component={OpenSea}
+                type="message"
+                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
+                theme="outlined"
+              />
+            }
+          >
+            <a href="https://opensea.io/collection/foxel-universe/">OpenSea</a>
           </Menu.Item>
           {/* <Menu.Item
             icon={

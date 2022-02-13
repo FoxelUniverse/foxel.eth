@@ -8,7 +8,6 @@ import { useThemeSwitcher } from "react-css-theme-switcher";
 export default function RecentlyMintedFoxels({ currentSupply }) {
   const count = ethers.BigNumber.from(currentSupply).toNumber();
   const recentlyMinted = metadata.slice(count - (count >= 5 ? 5 : count), count);
-  console.log("recentlyMinted", recentlyMinted, count);
   const { currentTheme } = useThemeSwitcher();
   return (
     <div className={`recently-minted-container ${currentTheme == "dark" ? "night" : ""}`}>

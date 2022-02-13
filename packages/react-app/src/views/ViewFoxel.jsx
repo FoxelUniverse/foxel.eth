@@ -12,21 +12,6 @@ function ViewFoxel({ baseUri }) {
           <h2>Viewing {thisFoxel.name}</h2>
         </Col>
         <Col span={12}>
-          <img src={imgLocation} alt={thisFoxel.name} style={{ transform: "scaleX(-1)" }} />
-          <h4 style={{ textAlign: "left" }}>
-            DNA:
-            <br /> {thisFoxel.dna}
-          </h4>
-          <h4 style={{ textAlign: "left" }}>
-            Metadata Location:
-            <br /> {baseUri + id}
-          </h4>
-          <h4 style={{ textAlign: "left" }}>
-            Image Location:
-            <br /> {thisFoxel.image}
-          </h4>
-        </Col>
-        <Col span={12}>
           <h4 style={{ textAlign: "left" }}>Traits:</h4>
           <Row gutter={[16, 16]}>
             {thisFoxel.attributes.map((attribute, index) => {
@@ -39,6 +24,21 @@ function ViewFoxel({ baseUri }) {
               );
             })}
           </Row>
+        </Col>
+        <Col span={12}>
+          <img src={imgLocation} alt={thisFoxel.name} />
+          <h4 style={{ textAlign: "left" }}>
+            DNA:
+            <br /> {thisFoxel.dna}
+          </h4>
+          <h4 style={{ textAlign: "left" }}>
+            Metadata Location:
+            <br /> {baseUri + id}
+          </h4>
+          <h4 style={{ textAlign: "left" }}>
+            Image Location:
+            <br /> {thisFoxel.image}
+          </h4>
         </Col>
       </Row>
     </div>
