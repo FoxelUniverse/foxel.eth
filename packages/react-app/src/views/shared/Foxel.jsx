@@ -1,31 +1,16 @@
 import React from "react";
-import { useState } from "react";
-import { LoadingOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
+
 import './Foxel.css';
-import FoxelSvg from '../../assets/foxel.svg';
+import metadata from '../../assets/foxelMetadata.json';
 
-
-export default function Foxel({ metadataSrc }) {
-    const [foxel, setFoxel] = useState([]);
-    const [loading, setLoading] = useState(true);
-    fetch(metadataSrc)
-        .then(response => response.json())
-        .then(data => {
-            setFoxel(data);
-            setLoading(false);
-        }).catch(error => console.log(error));
-
+export default function Foxel({ tokenId }) {
+    const imgLocation = '/Genesis/';
+    const thisFoxel = metadata[tokenId - 1];
     return (
-        <div className="foxel">
-            {loading ? (
-                <LoadingOutlined
-                    type="message"
-                    style={{ paddingTop: 20, fontSize: "60px", color: "#d34d2f" }}
-                    theme="outlined"
-                />
-            ) : (
-                <img src={foxel && foxel.image ? foxel.image.replace('ipfs://', 'https://ipfs.io/ipfs/') : FoxelSvg} />
-            )}
-        </div>
+        <Link className="foxel" to={`foxel/${tokenId}`}>
+            <img src={imgLocation + tokenId + '.png'} alt={thisFoxel.name} />
+            <p className="foxel-name">{thisFoxel.name}</p>
+        </Link>
     );
 }

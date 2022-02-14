@@ -1,4 +1,4 @@
-import { Alert, Button, Col, Menu, Row, Affix, Typography } from "antd";
+import { Col, Menu, Row, Affix } from "antd";
 import "antd/dist/antd.css";
 import {
   useBalance,
@@ -10,56 +10,34 @@ import {
 } from "eth-hooks";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
 import React, { useCallback, useEffect, useState } from "react";
-import { HomeOutlined, BugOutlined, QuestionCircleOutlined, PlusCircleOutlined, DeploymentUnitOutlined, RocketOutlined, HeartOutlined } from "@ant-design/icons";
-import { Link, Route, Switch, useLocation } from "react-router-dom";
+import Icon, {
+  HomeOutlined,
+  BugOutlined,
+  QuestionCircleOutlined,
+  PlusCircleOutlined,
+  RocketOutlined,
+  GithubOutlined,
+  TwitterOutlined,
+  FileTextOutlined,
+} from "@ant-design/icons";
+import { Route, Switch, HashRouter, useLocation } from "react-router-dom";
 import "./App.css";
-import {
-  Account,
-  Contract,
-  Faucet,
-  Events,
-  GasGauge,
-  Header,
-  Ramp,
-  ThemeSwitch,
-  NetworkDisplay,
-  FaucetHint,
-  NetworkSwitch,
-} from "./components";
-import { useEventListener } from "eth-hooks/events/useEventListener";
+import { Account, Contract, Faucet, ThemeSwitch, NetworkDisplay, FaucetHint } from "./components";
 import { NETWORKS, ALCHEMY_KEY } from "./constants";
 import externalContracts from "./contracts/external_contracts";
 // contracts
 import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Transactor, Web3ModalSetup } from "./helpers";
-import { Home, Hints, Subgraph, ViewFoxel, Roadmap, RecentlyMintedFoxels } from "./views";
+import { Home, Hints, Subgraph, ViewFoxel, Roadmap, MintView, OpenSea } from "./views";
 import { useStaticJsonRPC } from "./hooks";
 
 const { ethers } = require("ethers");
-/*
-    Welcome to 🏗 scaffold-eth !
-
-    Code:
-    https://github.com/scaffold-eth/scaffold-eth
-
-    Support:
-    https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA
-    or DM @austingriffith on twitter or telegram
-
-    You should get your own Alchemy.com & Infura.io ID and put it in `constants.js`
-    (this is your connection to the main Ethereum network for ENS etc.)
-
-
-    🌏 EXTERNAL CONTRACTS:
-    You can also bring in contract artifacts in `constants.js`
-    (and then use the `useExternalContractLoader()` hook!)
-*/
 
 /// 📡 What chain are your contracts deployed to?
 const initialNetwork = NETWORKS.matic; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
-const DEBUG = true;
+const DEBUG = false;
 const NETWORKCHECK = true;
 const USE_BURNER_WALLET = false; // toggle burner wallet feature
 const USE_NETWORK_SELECTOR = false;
@@ -83,7 +61,7 @@ function App(props) {
   const [selectedNetwork, setSelectedNetwork] = useState(networkOptions[0]);
   const location = useLocation();
 
-  const targetNetwork = NETWORKS.localhost;
+  const targetNetwork = NETWORKS.matic;
 
   // 🔭 block explorer URL
   const blockExplorer = targetNetwork.blockExplorer;
@@ -139,12 +117,10 @@ function App(props) {
   const tx = Transactor(userSigner, gasPrice);
 
   // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
-  const yourLocalBalance = useBalance(localProvider, address);
+  const yourLocalBalance = useBalance(localProvider, address, 30000);
 
   // Just plug in different 🛰 providers to get your balance on different chains:
-  const yourMainnetBalance = useBalance(mainnetProvider, address);
-
-  // const contractConfig = useContractConfig();
+  const yourMainnetBalance = useBalance(mainnetProvider, address, 30000);
 
   const contractConfig = { deployedContracts: deployedContracts || {}, externalContracts: externalContracts || {} };
 
@@ -167,17 +143,12 @@ function App(props) {
 
   // keep track of a variable from the contract in the local React state:
 
-  const currentSupply = useContractReader(readContracts, "Foxel", "currentSupply");
-  const tokenPrice = useContractReader(readContracts, "Foxel", "price", 10000);
-  const tokenLimit = useContractReader(readContracts, "Foxel", "limit", 10000);
-  const baseURI = useContractReader(readContracts, "Foxel", "baseURI");
-  const mintEnabled = useContractReader(readContracts, "Foxel", "mintEnabled");
+  const currentSupply = useContractReader(readContracts, "Foxel", "currentSupply", null, 30000);
+  const tokenPrice = useContractReader(readContracts, "Foxel", "price", null, 30000);
+  const tokenLimit = useContractReader(readContracts, "Foxel", "limit", null, 30000);
+  const mintEnabled = useContractReader(readContracts, "Foxel", "mintEnabled", null, 30000);
+  const baseUri = useContractReader(readContracts, "Foxel", "baseURI", null, 30000);
 
-
-  const foxelEvents = useEventListener(readContracts, "Foxel", "minted", localProvider, 1);
-  console.log(foxelEvents);
-  const recentlyMinted = foxelEvents.slice(-5);
-  console.log(recentlyMinted);
   //
   // 🧫 DEBUG 👨🏻‍🔬
   //
@@ -257,7 +228,7 @@ function App(props) {
           USE_NETWORK_SELECTOR={USE_NETWORK_SELECTOR}
         />
 
-        <Menu style={{ textAlign: "left" }} selectedKeys={[location.pathname]} mode="horizontal">
+        <Menu style={{ textAlign: "left" }} selectedKeys={[location.hash]} mode="horizontal">
           <Menu.Item
             icon={
               <HomeOutlined
@@ -266,9 +237,9 @@ function App(props) {
                 theme="outlined"
               />
             }
-            key="/"
+            key="#/"
           >
-            <Link to="/">Home</Link>
+            <a href="/#/">Home</a>
           </Menu.Item>
           <Menu.Item
             icon={
@@ -278,9 +249,9 @@ function App(props) {
                 theme="outlined"
               />
             }
-            key="/mint"
+            key="#/mint"
           >
-            <Link to="/mint">Mint</Link>
+            <a href="/#/mint">Mint</a>
           </Menu.Item>
           <Menu.Item
             icon={
@@ -290,11 +261,23 @@ function App(props) {
                 theme="outlined"
               />
             }
-            key="/roadmap"
+            key="#/roadmap"
           >
-            <Link to="/roadmap">Roadmap</Link>
+            <a href="/#/roadmap">Roadmap</a>
           </Menu.Item>
           <Menu.Item
+            icon={
+              <Icon
+                component={OpenSea}
+                type="message"
+                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
+                theme="outlined"
+              />
+            }
+          >
+            <a href="https://opensea.io/collection/foxel-universe/">OpenSea</a>
+          </Menu.Item>
+          {/* <Menu.Item
             icon={
               <DeploymentUnitOutlined
                 type="message"
@@ -302,9 +285,9 @@ function App(props) {
                 theme="outlined"
               />
             }
-            key="/dao"
+            key="#/dao"
           >
-            <Link to="/dao">FoxelDAO</Link>
+            <a href="/#/dao">FoxelDAO</a>
           </Menu.Item>
           <Menu.Item
             icon={
@@ -314,34 +297,38 @@ function App(props) {
                 theme="outlined"
               />
             }
-            key="/breed"
+            key="#/breed"
           >
-            <Link to="/breed">Breed</Link>
-          </Menu.Item>
-          {DEBUG ? (<Menu.Item
-            icon={
-              <BugOutlined
-                type="message"
-                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
-                theme="outlined"
-              />
-            }
-            key="/debug"
-          >
-            <Link to="/debug">Debug</Link>
-          </Menu.Item>) : null}
-          {DEBUG ? (<Menu.Item
-            icon={
-              <QuestionCircleOutlined
-                type="message"
-                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
-                theme="outlined"
-              />
-            }
-            key="/hints"
-          >
-            <Link to="/hints">Hints</Link>
-          </Menu.Item>) : null}
+            <a href="/#/breed">Breed</a>
+          </Menu.Item> */}
+          {DEBUG ? (
+            <Menu.Item
+              icon={
+                <BugOutlined
+                  type="message"
+                  style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
+                  theme="outlined"
+                />
+              }
+              key="#/debug"
+            >
+              <a href="/#/debug">Debug</a>
+            </Menu.Item>
+          ) : null}
+          {DEBUG ? (
+            <Menu.Item
+              icon={
+                <QuestionCircleOutlined
+                  type="message"
+                  style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
+                  theme="outlined"
+                />
+              }
+              key="#/hints"
+            >
+              <a href="/#/hints">Hints</a>
+            </Menu.Item>
+          ) : null}
         </Menu>
         <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
           <div style={{ display: "flex", flex: 1, alignItems: "center" }}>
@@ -361,6 +348,7 @@ function App(props) {
               userSigner={userSigner}
               mainnetProvider={mainnetProvider}
               price={price}
+              tokenPrice={tokenPrice}
               web3Modal={web3Modal}
               loadWeb3Modal={loadWeb3Modal}
               logoutOfWeb3Modal={logoutOfWeb3Modal}
@@ -372,161 +360,117 @@ function App(props) {
           )}
         </div>
       </Affix>
-      <Switch>
-        <Route exact path="/">
-          {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
-          <Home
-            yourLocalBalance={yourLocalBalance}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            tx={tx}
-            localProvider={localProvider}
-          />
-        </Route>
-        <Route exact path="/roadmap">
-          {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
-          <Roadmap
-            yourLocalBalance={yourLocalBalance}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            tx={tx}
-            localProvider={localProvider}
-          />
-        </Route>
-        <Route exact path="/foxel/:id">
-          {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
-          <ViewFoxel
-            yourLocalBalance={yourLocalBalance}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            tx={tx}
-            localProvider={localProvider}
-          />
-        </Route>
-        <Route exact path="/mint">
-          {address ? (
-            <Button
-              style={{ margin: 8, fontSize: 24, height: 50 }}
-              type="primary"
-              size="large"
-              loading={minting}
-              disabled={
-                !mintEnabled ||
-                !address ||
-                price > yourLocalBalance ||
-                (tokenLimit && currentSupply && tokenLimit.toString() == currentSupply.toString())
-              }
-              onClick={async () => {
-                try {
-                  setMinting(true);
-                  const result = tx(
-                    writeContracts.Foxel.safeMint(address, {
-                      value: tokenPrice,
-                      gasLimit: "140000",
-                    }),
-                  );
-                  console.log("awaiting metamask/web3 confirm result...", result);
-                  console.log(await result);
-                  setMinting(false);
-                } catch (e) {
-                  console.log(e);
-                  setMinting(false);
-                }
-              }}
-            >
-              {`Mint for ${tokenPrice ? ethers.utils.formatEther(tokenPrice) : "..."} MATIC`}
-            </Button>
-          ) : (
-            <Button
-              key="loginbutton"
-              type="primary"
-              style={{ verticalAlign: "top", margin: 8, fontSize: 24, height: 50 }}
-              shape="round"
-              size="large"
-              /* type={minimized ? "default" : "primary"}     too many people just defaulting to MM and having a bad time */
-              onClick={loadWeb3Modal}
-            >
-              connect to mint
-            </Button>
-          )}
-          <p>
-            <Typography.Text style={{ margin: 8 }}>{`${currentSupply || "..."} out of ${tokenLimit || "..."
-              } minted`}</Typography.Text>
-          </p>
-          {recentlyMinted && baseURI ? (
-            <RecentlyMintedFoxels
-              recentlyMinted={recentlyMinted}
-              baseURI={baseURI}
-            />) : (
-            <div />
-          )}
-
-        </Route>
-        <Route exact path="/debug">
-          {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
-
-          <Contract
-            name="Foxel"
-            price={price}
-            signer={userSigner}
-            provider={localProvider}
-            address={address}
-            blockExplorer={blockExplorer}
-            contractConfig={contractConfig}
-          />
-        </Route>
-        <Route path="/hints">
-          <Hints
-            address={address}
-            yourLocalBalance={yourLocalBalance}
-            mainnetProvider={mainnetProvider}
-            price={price}
-          />
-        </Route>
-        <Route path="/subgraph">
-          <Subgraph
-            subgraphUri={props.subgraphUri}
-            tx={tx}
-            writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
-          />
-        </Route>
-      </Switch>
-
+      <HashRouter>
+        <Switch>
+          <Route exact path="/">
+            {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
+            <Home
+              yourLocalBalance={yourLocalBalance}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              tx={tx}
+              localProvider={localProvider}
+            />
+          </Route>
+          <Route path="/roadmap">
+            {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
+            <Roadmap
+              yourLocalBalance={yourLocalBalance}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              tx={tx}
+              localProvider={localProvider}
+            />
+          </Route>
+          <Route path="/foxel/:id">
+            {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
+            <ViewFoxel baseUri={baseUri} />
+          </Route>
+          <Route path="/mint">
+            <MintView
+              address={address}
+              loadWeb3Modal={loadWeb3Modal}
+              price={price}
+              yourLocalBalance={yourLocalBalance}
+              tokenLimit={tokenLimit}
+              tokenPrice={tokenPrice}
+              mintEnabled={mintEnabled}
+              currentSupply={currentSupply}
+              minting={minting}
+              writeContracts={writeContracts}
+              setMinting={setMinting}
+              tx={tx}
+            />
+          </Route>
+          <Route path="/debug">
+            <Contract
+              name="Foxel"
+              price={price}
+              signer={userSigner}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              contractConfig={contractConfig}
+            />
+          </Route>
+          <Route path="/hints">
+            <Hints
+              address={address}
+              yourLocalBalance={yourLocalBalance}
+              mainnetProvider={mainnetProvider}
+              price={price}
+            />
+          </Route>
+          <Route path="/subgraph">
+            <Subgraph
+              subgraphUri={props.subgraphUri}
+              tx={tx}
+              writeContracts={writeContracts}
+              mainnetProvider={mainnetProvider}
+            />
+          </Route>
+        </Switch>
+      </HashRouter>
       <ThemeSwitch />
 
       {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
-
+      <div style={{ padding: 20, bottom: 0, width: "100%" }}>
+        <Row gutter={[16, 16]} justify="center">
+          <Col span={4}>
+            <a href="https://github.com/FoxelUniverse" target="_blank" rel="noopener noreferrer">
+              <GithubOutlined
+                title="Look at Source Code on GitHub"
+                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
+                theme="outlined"
+              ></GithubOutlined>
+            </a>
+          </Col>
+          <Col span={4}>
+            <a href="https://twitter.com/FoxelUniverse?ref_src=twsrc%5Etfw" target="_blank" rel="noopener noreferrer">
+              <TwitterOutlined
+                title="Follow Foxel on Twitter"
+                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
+                theme="outlined"
+              ></TwitterOutlined>
+            </a>
+          </Col>
+          <Col span={4}>
+            <a
+              href="https://polygonscan.com/address/0x35ba602c23d9f310fb2608f81c0c9e49c5136989"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <FileTextOutlined
+                title="View the Contract on PolygonScan"
+                style={{ paddingTop: 20, fontSize: "30px", color: "#d34d2f" }}
+                theme="outlined"
+              ></FileTextOutlined>
+            </a>
+          </Col>
+        </Row>
+      </div>
       {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
       <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-        {/* <Row align="middle" gutter={[4, 4]}>
-          <Col span={8}>
-            <Ramp price={price} address={address} networks={NETWORKS} />
-          </Col>
-
-          <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-            <GasGauge gasPrice={gasPrice} />
-          </Col>
-          <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-            <Button
-              onClick={() => {
-                window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
-              }}
-              size="large"
-              shape="round"
-            >
-              <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                💬
-              </span>
-              Support
-            </Button>
-          </Col>
-        </Row> */}
-
         <Row align="middle" gutter={[4, 4]}>
           <Col span={24}>
             {

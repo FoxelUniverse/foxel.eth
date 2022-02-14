@@ -38,7 +38,7 @@ module.exports = async ({
     from: deployer,
     args: [
       3000,
-      utils.parseEther("1"),
+      utils.parseEther("0.01"),
       "ipfs://QmSAHHFAaVv6YYydxQQWPQ3wDVJDefHV9fpV8MPURBCWhq/"
     ],
     log: true,
@@ -47,11 +47,10 @@ module.exports = async ({
   // Getting a previously deployed contract
   const YourContract = await ethers.getContract("Foxel", deployer);
   //await YourContract.setPurpose("Hello");
-
   // To take ownership of yourContract using the ownable library uncomment next line and add the 
   // address you want to be the owner. 
-  await YourContract.transferOwnership(foxelAddress);
-
+  const transferred = await YourContract.transferOwnership(foxelAddress);
+  console.log('changing owners', transferred);
   //const yourContract = await ethers.getContractAt('YourContract', "0xaAC799eC2d00C013f1F11c37E654e59B0429DF6A") //<-- if you want to instantiate a version of a contract at a specific address!
 
 

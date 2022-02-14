@@ -27,7 +27,7 @@ contract Foxel is ERC721, Ownable {
     }
 
     function safeMint(address to) public payable returns (uint256) {
-        require(mintEnabled || msg.sender == owner, "Minting is disabled");
+        require(mintEnabled || msg.sender == owner(), "Minting is disabled");
         _tokenIdCounter.increment();
         uint256 newItemId = _tokenIdCounter.current();
         require(msg.value >= price, "Not enough funds to mint");
@@ -46,7 +46,7 @@ contract Foxel is ERC721, Ownable {
         price = _price;
     }
 
-    function mintEnabled(bool _enabled) public onlyOwner {
+    function changeMintEnabled(bool _enabled) public onlyOwner {
         mintEnabled = _enabled;
     }
 
